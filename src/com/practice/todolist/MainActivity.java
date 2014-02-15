@@ -7,10 +7,12 @@ import java.util.ArrayList;
 import org.apache.commons.io.FileUtils;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -21,7 +23,7 @@ public class MainActivity extends Activity {
 	ArrayList<String> items;
 	ArrayAdapter<String> itemsAdapter;
     EditText etNewItem;
-	
+    private final int REQUEST_CODE = 20;
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,7 +62,35 @@ public class MainActivity extends Activity {
     			return true;
     		}
     	});
+    	lvItems.setOnItemClickListener(new OnItemClickListener() {
+    		@Override
+    	      public void onItemClick(AdapterView<?> adapter, View v, int position,
+    	            long arg3) 
+    	      {
+    				Intent editListView = new Intent(v.getContext(),EditItemActivity.class);
+    				editListView.putExtra("POS",position);
+    				editListView.putExtra("BODY", items.get(position));
+    				startActivityForResult(editListView,REQUEST_CODE);
+    	      }
+		});
     }
+    
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+      // REQUEST_CODE is defined above
+      if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
+         // Extract name value from result extras
+         String name = data.getExtras().getString("ItemName");
+         int position = data.getExtras().getInt("POS");
+         items.set(position, name);
+         itemsAdapter.notifyDataSetInvalidated();
+     	 saveItems();
+      }
+    } 
+    
+    
+    
+    
     
     private void readItems(){
     	File filesDir =getFilesDir();
